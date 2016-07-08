@@ -1,19 +1,5 @@
-init();
-function init() {
-  	if (OS_ANDROID) {
-  		exports.nav = {
-	        title: 'Wallet',
-	        rightNavButtons: [{
-				icon: '/images/wallet/currency.png',
-				callback: function() {}
-			}]
-	    };
-  	}
-}
-
-exports.init = function() {
+exports.load = function() {
 	// window will run when window is created
-	Alloy.Globals.toggleAI(false);
 };
 
 exports.cleanup = function() {
@@ -22,7 +8,6 @@ exports.cleanup = function() {
 
 exports.reload = function() {
 	// this will run when child window is close and this window focused
-	Alloy.Globals.toggleAI(false);
 };
 
 exports.unload = function() {
@@ -32,7 +17,7 @@ exports.unload = function() {
 function openWin2(e) {
   	Alloy.Globals.Tabgroup.load({
   		url: 'win_2',
-  		isReset: false,
+  		reset: false,
   		tabIndex: 0
   	});
 }

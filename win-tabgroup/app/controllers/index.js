@@ -20,11 +20,13 @@ function init() {
 	
 	if ( 1 ) {
 		winManager.load({
-			url: 'home'
+			url: 'home',
+			reset: true
 		});
 	} else {
 		winManager.load({
-			url: 'login'
+			url: 'login',
+			reset: true
 		});
 	}
 }

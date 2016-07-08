@@ -1,11 +1,5 @@
-// navigation
-exports.nav = {
-	title: 'Win 4'
-};
-
-exports.init = function() {
+exports.load = function() {
 	// window will run when window is created
-	Alloy.Globals.toggleAI(false);
 };
 
 exports.cleanup = function() {
@@ -22,6 +16,7 @@ exports.unload = function() {
 
 function openMain(e) {
   	Alloy.Globals.WinManager.load({
-  		url: 'main_window'
+  		url: 'home',
+  		reset: true
   	});
 }
