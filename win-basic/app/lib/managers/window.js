@@ -17,7 +17,7 @@ function WindowManager() {
 		
 		//
 		
-		Ti.API.log('Window Manager: initialized');
+		Ti.API.info('Window Manager: initialized');
 	}
 
 	function winLoaded(params, e) {
@@ -27,26 +27,12 @@ function WindowManager() {
 		
 		/*
 		 NOTES:
-		 
-		 - To use managers with widget: nl.fokkezb.drawer / NappDrawer
-		   
-		   + hide nav bar
-		   		if (OS_IOS) {
-					$.drawer.window.navBarHidden = true;
-				} else {
-					$.drawer.window.title = 'Home';
-				}
-		   
-		   + export a custom getView funtion
-                exports.getView = function() {
-                    return $.drawer.window;
-                };
-                
-         - For widgets that return a window
+		 - To use managers with widget: nl.fokkezb.drawer / NappDrawer, view this demo
+                https://github.com/ptquang86/menu
+         - To use managers with widgets that return a window
                 exports.getView = function() {
                     return $.widgetName.windowId;
                 };
-                
 		 * */
 		
 		win.addEventListener('open', windowOpened);
@@ -54,24 +40,32 @@ function WindowManager() {
 		// cleanup cache, in case of window is closed not by Window Manager
 		win.addEventListener('close', windowClosed);
 		
+		if (win.apiName == 'Ti.UI.iOS.NavigationWindow') {
+			params.navigationWindow = win;
+		}
+		
 		// make window visible
-		if (OS_IOS && win.apiName != 'Ti.UI.TabGroup' && win.hasNavigationWindow != 'false') {
-			if (params.isReset !== false) {
-				createNavigationWindow(params, win);
-			} else {
-				var navigationWindow = getNavigationWindow();
-				if (navigationWindow) {
-					navigationWindow.openWindow(win, params.openAnimation);
-				} else {
+		if (params.controller.doShow == null) {
+			if (OS_IOS && win.apiName != 'Ti.UI.TabGroup' && win.apiName != 'Ti.UI.iOS.NavigationWindow') {
+				if (params.reset) {
 					createNavigationWindow(params, win);
+				} else {
+					var navigationWindow = getNavigationWindow();
+					if (navigationWindow) {
+						navigationWindow.openWindow(win, params.openAnimation);
+					} else {
+						createNavigationWindow(params, win);
+					}
 				}
+			} else {
+				win.open(params.openAnimation);
 			}
 		} else {
-			win.open(params.openAnimation);
-			
-			// handle back event
-			OS_ANDROID && win.addEventListener('androidback', androidback);
+			params.controller.doShow(params, win);
 		}
+		
+		// handle back event
+		OS_ANDROID && win.addEventListener('androidback', androidback);
 	}
 	
 	function winDestroy(params, e) {
@@ -82,26 +76,36 @@ function WindowManager() {
 			
 			win.removeEventListener('close', windowClosed);
 			
-			if (OS_IOS && win.apiName != 'Ti.UI.TabGroup' && win.hasNavigationWindow != 'false') {
-				if (params.navigationWindow) {
-					params.navigationWindow.close(params.closeAnimation);
+			if (params.controller.doHide == null) {
+				if (OS_IOS && win.apiName != 'Ti.UI.TabGroup' && win.apiName != 'Ti.UI.iOS.NavigationWindow') {
+					if (params.navigationWindow) {
+						params.navigationWindow.close(params.closeAnimation);
+					} else {
+						var navigationWindow = getNavigationWindow();
+						navigationWindow.closeWindow(win, params.closeAnimation);
+					}
 				} else {
-					var navigationWindow = getNavigationWindow();
-					navigationWindow.closeWindow(win, params.closeAnimation);
+					// Caution: if win is TabGroup, make sure exitOnClose is false, or it will cause error on Android
+					win.close(params.closeAnimation);
 				}
 			} else {
-				// Caution: if win is TabGroup, make sure exitOnClose is false, or it will cause error on Android
-				win.close(params.closeAnimation);
+				params.controller.doHide(params, win);
 			}
 		}
-		
-		Ti.API.log('Window Manager: Cached window: ' + getCache().length);
 	}
 	
 	function windowOpened(e) {
-	  	var cache = getCache(-1),
-	  		init  = cache.controller.init;
-	  	init && init(cache);  
+	  	var cache = getCache(-1);
+	  	
+	  	// TODO: Deprecated
+	  	var init = cache.controller.init;
+	  	if (init) {
+	  		cache.controller.load = init;
+	  		Ti.API.error('Window Manager: [exports.init] callback is deprecated.\nPlease use [exports.load] callback instead.');
+	  	}
+	  	
+	  	var load = cache.controller.load;
+	  	load && load(cache);  
 	}
 	
 	function windowClosed(e) {
@@ -120,8 +124,13 @@ function WindowManager() {
 	function getNavigationWindow() {
 	  	var cache = getCache(),
 	  		navigationWindow;
-	  	for(var i = cache.length - 1; i >= 0; i--){
-			if (navigationWindow = cache[i].navigationWindow) {
+	  	for (var i = cache.length - 1; i >= 0; i--) {
+	  		var params = cache[i];
+			if (params.navigationWindow) {
+				navigationWindow = params.navigationWindow;
+				break;
+			} else if (params.controller.getNavigationWindow) {
+				navigationWindow = params.controller.getNavigationWindow();
 				break;
 			}
 		};
@@ -132,25 +141,32 @@ function WindowManager() {
 	 params ={
 		url: '',			// the url of the window
 		data: {},			// data for that window
-		isReset : true,		// remove previous windows or not, default is true
-		animated: true
+		reset: false,		// remove previous windows or not, default is false
+		openAnimation: null // open animation
+		closeAnimation: null // close animation
 	 }
 	 * */
 	function load(params) {
-		Ti.API.log('Window Manager: Load window ' + params.url + ': ' + JSON.stringify(params.data));
-		
 		UICache.load(params);
-
-		Ti.API.log('Window Manager: Cached window: ' + getCache().length);
 	};
 	
 	function getCache(index) {
-		return UICache.get(index);
+		return UICache.getCache(index);
+	}
+
+	function remove(start, end) {
+		// TODO: Deprecated
+		Ti.API.error('Window Manager: [remove] function is deprecated.\nPlease use [splice(start, count)] function instead.');
+	  	UICache.remove(start, end);
+	  	Ti.API.info('Window Manager: Remove from ' + start + ' to ' + end);
+	}
+	
+	function splice(start, count) {
+		UICache.splice(start, count);
 	}
 
 	function reset() {
 	  	UICache.reset();
-	  	Ti.API.log('Window Manager: Reset!');
 	}
 
 	/*
@@ -161,7 +177,11 @@ function WindowManager() {
 	function loadPrevious(data, count, isReload) {
 		return UICache.loadPrevious(data, count, isReload);
 	}	
+	
 	function loadPreviousOrReset(data, count, isReload) {
+		// TODO: Deprecated
+	  	Ti.API.error('Window Manager: [loadPreviousOrReset] function is deprecated.\nPlease use [loadPrevious] or [reset] function instead.');
+		
 		if ( count >= getCache().length ) {
 			reset();
 		} else {
@@ -181,7 +201,7 @@ function WindowManager() {
 			activity && activity.finish();
 		}
 
-		Ti.API.log('Window Manager: Exit!');
+		Ti.API.info('Window Manager: Exit!');
 	}
 	
 	function androidback(e) {
@@ -223,6 +243,8 @@ function WindowManager() {
 		loadPrevious: loadPrevious,
 		loadPreviousOrReset: loadPreviousOrReset,
 		getCache: getCache,
+		remove: remove,
+		splice: splice,
 		reset: reset,
 		exit: exit
 	};

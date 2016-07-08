@@ -8,7 +8,7 @@
 	// });
 // }
 
-exports.init = function() {
+exports.load = function() {
 	Ti.API.error('init ' + JSON.stringify( 1 ));
 };
 
@@ -31,6 +31,6 @@ exports.unload = function() {
 function openWin2(e) {
   	Alloy.Globals.WinManager.load({
   		url: 'win_2',
-  		isReset: false
+  		reset: false
   	});
 }

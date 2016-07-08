@@ -5,14 +5,15 @@ function init() {
 	
 	var oWindowManager = require('managers/window'),
 		winManager = new oWindowManager();
-		winManager.on('window:exit', confirmExit);
+		OS_ANDROID && winManager.on('window:exit', confirmExit);
 	
 	Alloy.Globals.WinManager = winManager;
 	
 	// load UI
 	
 	winManager.load({
-		url: 'win_1'
+		url: 'win_1',
+		reset: true
 	});
 }
 

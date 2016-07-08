@@ -1,4 +1,4 @@
-exports.init = function() {
+exports.load = function() {
 	// window will run when window is created
 	setTimeout(function(){
 		// hide AI
@@ -21,6 +21,6 @@ exports.unload = function() {
 function openWin2(e) {
   	Alloy.Globals.WinManager.load({
   		url: 'win_2',
-  		isReset: false
+  		reset: false
   	});
 }

@@ -20,7 +20,8 @@ function init() {
 	// load UI
 	
 	winManager.load({
-		url: 'win_1'
+		url: 'win_1',
+		reset: true
 	});
 }
 

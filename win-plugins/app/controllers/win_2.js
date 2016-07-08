@@ -1,28 +1,8 @@
-// navigation
-exports.nav = {
-	title: 'This is Win 2',
-	rightNavButton: [
-		{
-			title: 'Edit',
-			icon: '/images/tabs/settings.png',
-			showAsAction: OS_IOS ? null : Ti.Android.SHOW_AS_ACTION_ALWAYS,
-			callback: function() {
-			  	alert('Edit clicked');
-			}
-		}
-	]
-};
-
-exports.init = function() {
+exports.load = function() {
 	// window will run when window is created
 	setTimeout(function(){
 		// hide AI
 		Alloy.Globals.toggleAI(false);
-		
-		// update Navigation
-		var nav = exports.nav;
-		nav.title = 'Updated Title';
-		loadNav(nav);
 	}, 3000);
 };
 
@@ -43,6 +23,17 @@ function openWin1(e) {
 }
 
 function loadNav(nav) {
-	var controller = e.cache.controller;
-    require('managers/nav').load($.tabgroup, nav);
+    require('managers/nav').load($.getView(), {
+		title: 'This is Win 2',
+		rightNavButton: [
+			{
+				title: 'Edit',
+				icon: '/images/tabs/settings.png',
+				showAsAction: OS_IOS ? null : Ti.Android.SHOW_AS_ACTION_ALWAYS,
+				callback: function() {
+				  	alert('Edit clicked');
+				}
+			}
+		]
+	});
 }

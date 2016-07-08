@@ -1,7 +1,7 @@
 var args = arguments[0] || {};
 Ti.API.error('data ' + JSON.stringify( args ));
 
-exports.init = function() {
+exports.load = function() {
 	Ti.API.error('init ' + JSON.stringify( 3 ));
 };
 

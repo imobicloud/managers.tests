@@ -1,4 +1,4 @@
-exports.init = function() {
+exports.load = function() {
 	Ti.API.error('init ' + JSON.stringify( 2 ));
 };
 
@@ -23,6 +23,7 @@ function openWin1(e) {
 function openWin3(e) {
   	Alloy.Globals.WinManager.load({
   		url: 'win_3',
-  		data: { name: 'Window Name' }
+  		data: { name: 'Window Name' },
+  		reset: true
   	});
 }
